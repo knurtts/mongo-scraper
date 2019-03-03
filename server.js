@@ -1,16 +1,23 @@
 require("dotenv").config();
-var express = require("express");
-var exphbs = require("express-handlebars");
+const express = require("express");
+const exphbs = require("express-handlebars");
+const mongoose = require("mongoose");
 
-var db = require("./models");
+const db = require("./models");
 
-var app = express();
-var PORT = process.env.PORT || 3000;
+const app = express();
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(express.static("public"));
+
+mongoose.connect(
+  "mongodb://localhost/mongoHeadlines",
+  {
+    useNewUrlParser: true
+  });
 
 // Handlebars
 app.engine(

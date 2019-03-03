@@ -1,33 +1,79 @@
-<div id="home">
-  <div class="container">
-    <div class="row">
-      <div class="col-8 offset-2">
-        <h1>{{msg}}</h1>
-        <h2>This is our Home Page!</h2>
-        <form class="clearfix mb-4" action="POST">
-          <div class="form-group">
-            <label for="example-text">Example Text</label>
-            <input type="text" id="example-text" class="form-control" aria-describedby="example-text" placeholder="Enter Example Text">
-          </div>
-          <div class="form-group">
-            <label for="example-description">Example Description</label>
-            <textarea class="form-control" id="example-description" aria-describedby="example-description" placeholder="Enter Example Description"></textarea>
-          </div>
-          <button id="submit" class="btn btn-primary float-right">Submit</button>
-        </form>
-        <h3>Examples:</h3>
-        <ul id="example-list" class="list-group">
-          {{#each examples}}
-          <li data-id="{{this.id}}" class="list-group-item">
-            <a href="example/{{this.id}}">{{this.text}}</a>
-            <button class="btn btn-danger float-right delete">ｘ</button>
-          </li>
-          {{/each}}
-        </ul>
+<div class="container">
+  {{!-- <div class="row"> --}}
+    <div class="col-8 offset-2">
+
+      <div class="jumbotron jumbotron-fluid">
+        <div class="container">
+          <h1 class="display-4">{{msg}}</h1>
+          <p class="lead">To the PC Gaming News Scraper!</p>
+        </div>
       </div>
+      <h3>PC Gamer Articles:</h3>
+      {{#each examples}}
+      <div class="card">
+        <div class="card-header">
+          <headline data-id="{{this._id}}">
+            <strong>{{this.headline}}</strong>
+          </headline>
+          <note id="notes{{this._id}}"></note>
+        </div>
+        <div class="card-body">
+          <blockquote class="mb-0">
+            <a href="{{this.link}}">
+              <p>{{this.summary}}</p>
+            </a>
+          </blockquote>
+        </div>
+      </div>
+      {{/each}}
     </div>
   </div>
+  {{!-- </div> --}}
 </div>
 
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-<script src="/js/index.js"></script>
+<script>
+
+  $("headline").on("click", function() {
+    let thisId = $(this).attr("data-id");
+    let thisNote = "#notes"+thisId;
+
+    $(thisNote).empty();
+
+    $.get("/article/"+thisId).then(function(data) {
+      let noteForm = '<div class="form-group">';
+        noteForm += '<label>Note Title:</label>';
+        noteForm += '<input class="form-control" id ="title'+thisId+'" type="text">';
+        noteForm += '<label>Note:</label>';
+        noteForm += '<textarea class="form-control note-content" id="body'+thisId+'"></textarea>';
+        noteForm += '<button type="button" class="btn btn-primary modal-button save-note" data-id="'+thisId+'">Save Note</button>';
+      $(thisNote).append(noteForm);
+
+      if (data.note) {
+        let titleField = "#title"+thisId;
+        let bodyField = "#body"+thisId;
+        $(titleField).val(data.note.title);
+        $(bodyField).val(data.note.body);
+      };
+    });
+  })
+
+  $(document).on("click", ".save-note", function() {
+
+    let noteId = $(this).attr("data-id");
+    
+    console.log("Button clicked");
+    
+    let URL = "/postnote/"+noteId;
+    $.ajax({
+      method: "POST",
+      url: URL,
+      data: {
+        title: $("#title"+noteId).val(),
+        body: $("#body"+noteId).val()
+      }
+    }).then(function(data) {
+      console.log("Logging Data:");
+      console.log(data);
+    });
+  });
+</script>

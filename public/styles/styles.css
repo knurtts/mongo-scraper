@@ -1,3 +1,11 @@
 .list-group-item {
   line-height: 2.5;
 }
+
+body {
+  background: #838383;
+}
+
+.card {
+  margin-top: 1%;
+}
