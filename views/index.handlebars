@@ -1,5 +1,4 @@
 <div class="container">
-  {{!-- <div class="row"> --}}
     <div class="col-8 offset-2">
 
       <div class="jumbotron jumbotron-fluid">
@@ -28,10 +27,15 @@
       {{/each}}
     </div>
   </div>
-  {{!-- </div> --}}
 </div>
 
 <script>
+
+  $(document).ready(function() {
+  $.get("/scrape", function(data) {
+    console.log("Article list updated");
+  })
+  })
 
   $("headline").on("click", function() {
     let thisId = $(this).attr("data-id");
@@ -46,6 +50,7 @@
         noteForm += '<label>Note:</label>';
         noteForm += '<textarea class="form-control note-content" id="body'+thisId+'"></textarea>';
         noteForm += '<button type="button" class="btn btn-primary modal-button save-note" data-id="'+thisId+'">Save Note</button>';
+        noteForm += '<button type="button" class="btn btn-danger close-button">Close Comment</button>';
       $(thisNote).append(noteForm);
 
       if (data.note) {
@@ -61,7 +66,7 @@
 
     let noteId = $(this).attr("data-id");
     
-    console.log("Button clicked");
+    let commentSection = $(this).parent("div");
     
     let URL = "/postnote/"+noteId;
     $.ajax({
@@ -72,8 +77,11 @@
         body: $("#body"+noteId).val()
       }
     }).then(function(data) {
-      console.log("Logging Data:");
-      console.log(data);
+      commentSection.remove();
     });
   });
+
+  $(document).on("click", ".close-button", function() {
+    $(this).parent("div").remove();
+  })
 </script>

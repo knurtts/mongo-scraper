@@ -7,30 +7,31 @@ module.exports = function(app) {
   app.get("/scrape", function(req, res) {
     //put the scrapper here which will run everytime the page loads
     axios.get("https://www.pcgamer.com/news/").then(function(response) {
-      var $ = cheerio.load(response.data);
+      let $ = cheerio.load(response.data);
 
       $(".listingResults.news .listingResult").each(function(i, element) {
-        var result = {};
+        let result = {};
         result.headline = $(this).find("h3").text();
         result.summary = $(this).find(".synopsis").text().replace(/(\r\n|\n|\r)/gm, " ");
         result.link = $(this).children("a").attr("href");
-        // result.note = "";
         
-        db.Article.create(result, {unique: true}).then(function(dbArticle) {
-          console.log(dbArticle);
+        db.Article.create(result).then(function(dbArticle) {
+          console.log("done");
+          // res.json(dbArticle);
         }).catch(function(err) {
           console.log("ERROR");
-          
           console.log(err);  
-        });        
+        });
       });
+
     });
-    res.send("Tada!");
+    console.log(articleList);
+    res.send(articleList);
   });
 
   app.get("/articles/", function (req, res) {
     //get all articles from the database
-    db.Article.find({}).then(function(data) {
+    db.Article.find({}).populate("note").then(function(data) {
       res.json(data);
     }).catch(function(err) {
       console.log("Error getting all articles:");
@@ -38,7 +39,7 @@ module.exports = function(app) {
     });
   });
 
-  app.get("/postnote/:id", function (req, res) {
+  app.get("/article/:id", function (req, res) {
     //get an article by _id and populate its note
     db.Article.findOne({_id: req.params.id})
       .populate("note")
@@ -53,33 +54,15 @@ module.exports = function(app) {
     //saving/updating an article's note
     db.Note.create(req.body)
       .then(function(dbNote) {
-        // let data = {};
-      return db.Article.findOneAndUpdate({id: req.params.id}, {$set: {note: dbNote._id}}, {new: true})
-      .then(function(dbArticle) {
-        // res.send(dbArticle);
-        res.json(dbArticle);
-      }).catch(function(err) {
+        db.Article.findOneAndUpdate({_id: req.params.id}, {$set: {note: dbNote._id}})
+        .then(function(data) {
+          console.log("Note Saved.");
+          res.json(data);
+        }).catch(function(err) {
         console.log("Error with updating a note:");
         console.log(err);
-      });
+        });
+        
     })
   });
-
-  app.put("/postnote/:id", function (req, res) {
-    //saving/updating an article's note
-    db.Note.create(req.body)
-      .then(function(dbNote) {
-        // let data = {};
-      return db.Article.findOneAndUpdate({id: req.params.id}, {$set: {note: dbNote._id}}, {new: true})
-      .then(function(dbArticle) {
-        // res.send(dbArticle);
-        res.json(dbArticle);
-      }).catch(function(err) {
-        console.log("Error with updating a note:");
-        console.log(err);
-      });
-    })
-  });
-
-
 };
