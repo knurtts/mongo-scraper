@@ -17,7 +17,7 @@ module.exports = function(app) {
         
         db.Article.create(result).then(function(dbArticle) {
           console.log("done");
-          // res.json(dbArticle);
+          res.json(dbArticle);
         }).catch(function(err) {
           console.log("ERROR");
           console.log(err);  
@@ -25,8 +25,8 @@ module.exports = function(app) {
       });
 
     });
-    console.log(articleList);
-    res.send(articleList);
+    console.log("done");
+    // res.send(articleList);
   });
 
   app.get("/articles/", function (req, res) {
